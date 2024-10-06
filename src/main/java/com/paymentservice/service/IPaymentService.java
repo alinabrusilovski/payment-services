@@ -6,11 +6,11 @@ import com.paymentservice.dto.PayerDto;
 import java.util.List;
 import java.util.Optional;
 
-public interface IPayerService {
+public interface IPaymentService {
 
     PayerDto createPayer(PayerDto payerDto);
-    Optional getPayerById(Long payerId);
+    Optional getPayerById(Integer payerId);
     List<PayerDto> getAllPayers();
-    PayerDto updatePayer(Long payerId, PayerDto updatedPayer);
-    List<InvoiceDto> getInvoicesByPayerId(Long payerId);
+    PayerDto updatePayer(Integer payerId, PayerDto updatedPayer);
+    List<InvoiceDto> getInvoicesByPayerId(Integer payerId);
 }

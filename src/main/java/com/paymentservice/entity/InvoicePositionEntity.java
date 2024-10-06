@@ -15,16 +15,16 @@ public class InvoicePositionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "invoice_position_id")
-    private Long invoicePositionId;
-
-    @ManyToOne
-    @JoinColumn(name = "invoice_id", nullable = false)
-    private InvoiceEntity invoice;
+    private Integer invoicePositionId;
 
     @Column(name = "invoice_position_description")
     private String invoicePositionDescription;
 
     @Column(name = "amount", nullable = false)
     private Double amount;
+
+    @ManyToOne
+    @JoinColumn(name = "invoice_id", nullable = false)
+    private InvoiceEntity invoice;
 
 }

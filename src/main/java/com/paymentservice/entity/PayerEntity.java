@@ -20,7 +20,7 @@ public class PayerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payer_id")
-    private Long payerId;
+    private Integer payerId;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -44,7 +44,7 @@ public class PayerEntity {
         return invoices;
     }
 
-    public PayerEntity(Long payerId, String name, String secondName, LocalDate birthDate, String email, String phone) {
+    public PayerEntity(Integer payerId, String name, String secondName, LocalDate birthDate, String email, String phone) {
         this.payerId = payerId;
         this.name = name;
         this.secondName = secondName;

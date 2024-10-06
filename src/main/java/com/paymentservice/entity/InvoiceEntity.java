@@ -1,8 +1,10 @@
 package com.paymentservice.entity;
 
+import com.paymentservice.dto.PayerDto;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -17,19 +19,18 @@ public class InvoiceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "invoice_id")
-    private Long invoiceId;
+    private Integer invoiceId;
 
     @Column(name = "system_id")
-    private Long systemId;
+    private Integer systemId;
+
+    @Column(name = "invoice_description")
+    private String invoiceDescription;
 
     @ManyToOne
     @JoinColumn(name = "payer_id", nullable = false)
     private PayerEntity payer;
 
-    @Column(name = "invoice_description")
-    private String invoiceDescription;
-
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<InvoicePositionEntity> invoicePositions;
-
+    private List<InvoicePositionEntity> positions = new ArrayList<>();;
 }

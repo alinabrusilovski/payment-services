@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface InvoicePositionRepository extends JpaRepository<InvoicePositionEntity, Long> {
-//    List<InvoicePositionEntity> findByInvoice_InvoiceId(Long invoiceId); // Для получения позиций по инвойсу
+public interface InvoicePositionRepository extends JpaRepository<InvoicePositionEntity, Integer> {
+    List<InvoicePositionEntity> findByInvoice_InvoiceId(Integer invoiceId);
 }
