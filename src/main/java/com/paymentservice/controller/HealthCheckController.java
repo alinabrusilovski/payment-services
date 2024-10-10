@@ -1,5 +1,6 @@
 package com.paymentservice.controller;
 
+import com.paymentservice.dto.HealthStatusDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthCheckController {
 
     @GetMapping
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Application is running");
-    }
+    public ResponseEntity<HealthStatusDto> healthCheck() {
+        HealthStatusDto status = new HealthStatusDto("Application is running");
+        return ResponseEntity.ok(status);    }
 }

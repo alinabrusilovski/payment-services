@@ -3,6 +3,8 @@ package com.paymentservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "invoice_position")
 @NoArgsConstructor
@@ -21,7 +23,7 @@ public class InvoicePositionEntity {
     private String invoicePositionDescription;
 
     @Column(name = "amount", nullable = false)
-    private Double amount;
+    private BigDecimal amount;
 
     @ManyToOne
     @JoinColumn(name = "invoice_id", nullable = false)
