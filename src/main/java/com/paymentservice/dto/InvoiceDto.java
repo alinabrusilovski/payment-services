@@ -1,4 +1,6 @@
 package com.paymentservice.dto;
 
-public record InvoiceDto(Long invoiceId, Long systemId, Long payerId, String invoiceDescription) {
+import java.util.List;
+
+public record InvoiceDto(Integer systemId, String invoiceDescription, PayerDto payer, List<InvoicePositionDto> positions) {
 }

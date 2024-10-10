@@ -3,6 +3,8 @@ package com.paymentservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "invoice_position")
 @NoArgsConstructor
@@ -15,16 +17,16 @@ public class InvoicePositionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "invoice_position_id")
-    private Long invoicePositionId;
-
-    @ManyToOne
-    @JoinColumn(name = "invoice_id", nullable = false)
-    private InvoiceEntity invoice;
+    private Integer invoicePositionId;
 
     @Column(name = "invoice_position_description")
     private String invoicePositionDescription;
 
     @Column(name = "amount", nullable = false)
-    private Double amount;
+    private BigDecimal amount;
+
+    @ManyToOne
+    @JoinColumn(name = "invoice_id", nullable = false)
+    private InvoiceEntity invoice;
 
 }

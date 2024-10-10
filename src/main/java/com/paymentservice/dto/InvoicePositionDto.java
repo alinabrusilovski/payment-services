@@ -1,4 +1,8 @@
 package com.paymentservice.dto;
 
-public record InvoicePositionDto(Long invoicePositionId, Long invoiceId, String invoicePositionDescription, Double amount) {
+import org.springframework.lang.Nullable;
+
+import java.math.BigDecimal;
+
+public record InvoicePositionDto(@Nullable Integer invoicePositionId, String invoicePositionDescription, BigDecimal amount) {
 }
