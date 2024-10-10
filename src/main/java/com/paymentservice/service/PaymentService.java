@@ -11,14 +11,23 @@ import com.paymentservice.repository.InvoiceRepository;
 import com.paymentservice.repository.PayerRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class PaymentService implements IPaymentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
 
     @Autowired
     InvoiceRepository invoiceRepository;
@@ -27,50 +36,105 @@ public class PaymentService implements IPaymentService {
     @Autowired
     InvoicePositionRepository invoicePositionRepository;
 
+
     //INVOICE
 
     @Override
-    //сохранение данных
     public InvoiceEntity createInvoice(InvoiceDto invoiceDto) {
-        // Создание нового плательщика
+        logger.info("Starting invoice creation process for systemId: {}", invoiceDto.systemId());
+
+        try {
+            // Создание и сохранение плательщика
+            PayerEntity payer = createAndSavePayer(invoiceDto.payer());
+
+            // Создание и сохранение инвойса
+            InvoiceEntity invoiceEntity = createAndSaveInvoice(invoiceDto, payer);
+
+            // Обработка позиций инвойса
+            processInvoicePositions(invoiceEntity, invoiceDto.positions());
+
+            logger.info("Invoice creation process completed successfully for systemId: {}", invoiceDto.systemId());
+            return invoiceEntity;
+
+        } catch (Exception e) {
+            logger.error("Error occurred during invoice creation for systemId {}: {}", invoiceDto.systemId(), e.getMessage(), e);
+            throw new RuntimeException("Error occurred during invoice creation", e);
+        }
+    }
+
+    private PayerEntity createAndSavePayer(PayerDto payerDto) {
         PayerEntity newPayer = new PayerEntity();
-        newPayer.setName(invoiceDto.payer().name());
-        newPayer.setSecondName(invoiceDto.payer().secondName());
-        newPayer.setBirthDate(invoiceDto.payer().birthDate());
-        newPayer.setEmail(invoiceDto.payer().email());
-        newPayer.setPhone(invoiceDto.payer().phone());
+        newPayer.setName(payerDto.name());
+        newPayer.setSecondName(payerDto.secondName());
+        newPayer.setBirthDate(payerDto.birthDate());
+        newPayer.setEmail(payerDto.email());
+        newPayer.setPhone(payerDto.phone());
 
-        // Сохранение нового плательщика
+        logger.info("Payer data created: {} {}", newPayer.getName(), newPayer.getSecondName());
+
         PayerEntity savedPayer = payerRepository.save(newPayer);
+        logger.info("Payer saved with ID: {}", savedPayer.getPayerId());
 
-        // Создание инвойса
+        return savedPayer;
+    }
+
+    private InvoiceEntity createAndSaveInvoice(InvoiceDto invoiceDto, PayerEntity payer) {
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setSystemId(invoiceDto.systemId());
         invoiceEntity.setInvoiceDescription(invoiceDto.invoiceDescription());
-        invoiceEntity.setPayer(savedPayer);
+        invoiceEntity.setPayer(payer);
 
-        // Сохранение инвойса
-        invoiceRepository.save(invoiceEntity);
+        logger.info("Invoice object created for systemId: {}", invoiceDto.systemId());
 
-        // Сохранение позиций инвойса
-        if (invoiceDto.positions() != null) {
-            for (var positionDto : invoiceDto.positions()) {
-                InvoicePositionEntity position = new InvoicePositionEntity();
-                position.setInvoice(invoiceEntity);
-                position.setInvoicePositionDescription(positionDto.invoicePositionDescription());
-                position.setAmount(positionDto.amount());
-                invoiceEntity.getPositions().add(position);
-            }
-            invoiceRepository.save(invoiceEntity);  // Обновляем инвойс с позициями
+        InvoiceEntity savedInvoice = invoiceRepository.save(invoiceEntity);
+        logger.info("Invoice saved with ID: {}", savedInvoice.getInvoiceId());
+
+        return savedInvoice;
+    }
+
+    private void processInvoicePositions(InvoiceEntity invoiceEntity, List<InvoicePositionDto> positionDtos) {
+        if (positionDtos == null || positionDtos.isEmpty()) {
+            logger.warn("No invoice positions provided for invoice with systemId: {}", invoiceEntity.getSystemId());
+            return;
         }
 
-        return invoiceEntity;
+        logger.info("Processing {} invoice positions for invoice ID: {}", positionDtos.size(), invoiceEntity.getInvoiceId());
+
+        for (var positionDto : positionDtos) {
+            InvoicePositionEntity position = new InvoicePositionEntity();
+            position.setInvoice(invoiceEntity);
+            position.setInvoicePositionDescription(positionDto.invoicePositionDescription());
+            position.setAmount(positionDto.amount());
+
+            invoicePositionRepository.save(position);
+            logger.info("Invoice position saved for invoice ID: {}", invoiceEntity.getInvoiceId());
+        }
     }
+
 
     @Override
     public List<InvoiceEntity> getAllInvoices() {
-        return invoiceRepository.findAll();
+        logger.info("Fetching all invoices from the database...");
+
+        try {
+            List<InvoiceEntity> invoices = invoiceRepository.findAll();
+
+            if (invoices.isEmpty()) {
+                logger.info("No invoices found in the database.");
+            } else {
+                logger.info("Successfully fetched {} invoices from the database.", invoices.size());
+            }
+
+            return invoices;
+
+        } catch (Exception e) {
+            logger.error("Error fetching invoices from the database: {}", e.getMessage(), e);
+            throw new RuntimeException("Error occurred while fetching invoices.", e);
+        }
     }
+
+}
+
 
 
 
@@ -242,5 +306,3 @@ public class PaymentService implements IPaymentService {
 //                positionEntity.getAmount()
 //        );
 //    }
-
-}
