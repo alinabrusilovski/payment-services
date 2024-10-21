@@ -11,6 +11,7 @@ import com.paymentservice.repository.InvoiceRepository;
 import com.paymentservice.repository.PayerRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PaymentService implements IPaymentService {
@@ -40,6 +42,7 @@ public class PaymentService implements IPaymentService {
     //INVOICE
 
     @Override
+    @Transactional
     public InvoiceEntity createInvoice(InvoiceDto invoiceDto) {
         logger.info("Starting invoice creation process for systemId: {}", invoiceDto.systemId());
 
@@ -102,9 +105,11 @@ public class PaymentService implements IPaymentService {
 
         for (var positionDto : positionDtos) {
             InvoicePositionEntity position = new InvoicePositionEntity();
-            position.setInvoice(invoiceEntity);
             position.setInvoicePositionDescription(positionDto.invoicePositionDescription());
             position.setAmount(positionDto.amount());
+            position.setInvoice(invoiceEntity);
+
+            invoiceEntity.getPositions().add(position);
 
             invoicePositionRepository.save(position);
             logger.info("Invoice position saved for invoice ID: {}", invoiceEntity.getInvoiceId());
@@ -134,8 +139,6 @@ public class PaymentService implements IPaymentService {
     }
 
 }
-
-
 
 
 //    //PAYER
