@@ -36,7 +36,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/get/all")
-    public ResponseEntity<List<InvoiceEntity>> getAllInvoices(){
+    public ResponseEntity<List<InvoiceEntity>> getAllInvoices() {
         logger.info("Received request to get all invoices.");
 
         try {

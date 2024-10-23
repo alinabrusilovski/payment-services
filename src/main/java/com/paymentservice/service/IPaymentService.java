@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface IPaymentService {
     InvoiceEntity createInvoice(InvoiceDto invoiceDto);
+
     List<InvoiceEntity> getAllInvoices();
 //    PayerDto createPayer(PayerDto payerDto);
 //    Optional getPayerById(Integer payerId);
