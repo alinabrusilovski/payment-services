@@ -12,14 +12,4 @@ import java.util.Optional;
 public interface IPaymentService {
     InvoiceEntity createInvoice(InvoiceDto invoiceDto);
     List<InvoiceEntity> getAllInvoices();
-//    PayerDto createPayer(PayerDto payerDto);
-//    Optional getPayerById(Integer payerId);
-//    List<PayerDto> getAllPayers();
-//    PayerDto updatePayer(Integer payerId, PayerDto updatedPayer);
-//    List<InvoiceDto> getInvoicesByPayerId(Integer payerId);
-//    InvoicePositionDto createInvoicePosition(InvoicePositionDto positionDto, Integer invoiceId);
-//    List<InvoicePositionDto> getInvoicePositionsByInvoiceId(Integer invoiceId);
-//    InvoicePositionDto getInvoicePositionById(Integer positionId);
-//    InvoicePositionDto updateInvoicePosition(Integer positionId, InvoicePositionDto positionDto);
-//    void deleteInvoicePosition(Integer positionId);
 }

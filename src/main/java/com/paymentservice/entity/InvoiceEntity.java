@@ -1,5 +1,7 @@
 package com.paymentservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.paymentservice.dto.PayerDto;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "positions")
 public class InvoiceEntity {
 
     @Id
@@ -32,5 +34,6 @@ public class InvoiceEntity {
     private PayerEntity payer;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<InvoicePositionEntity> positions = new ArrayList<>();;
+    @JsonManagedReference
+    private List<InvoicePositionEntity> positions = new ArrayList<>();
 }

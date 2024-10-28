@@ -31,7 +31,7 @@ public class PayerEntity {
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "phone")

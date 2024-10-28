@@ -13,5 +13,6 @@ public class HealthCheckController {
     @GetMapping
     public ResponseEntity<HealthStatusDto> healthCheck() {
         HealthStatusDto status = new HealthStatusDto("Application is running");
-        return ResponseEntity.ok(status);    }
+        return ResponseEntity.ok(status);
+    }
 }

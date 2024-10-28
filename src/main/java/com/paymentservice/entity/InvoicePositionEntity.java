@@ -1,5 +1,7 @@
 package com.paymentservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "invoice")
 public class InvoicePositionEntity {
 
     @Id
@@ -27,6 +29,7 @@ public class InvoicePositionEntity {
 
     @ManyToOne
     @JoinColumn(name = "invoice_id", nullable = false)
+    @JsonIgnore
     private InvoiceEntity invoice;
 
 }
