@@ -34,7 +34,6 @@ public class InvoiceEntity {
     private PayerEntity payer;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference // Это поле будет сериализоваться
+    @JsonManagedReference
     private List<InvoicePositionEntity> positions = new ArrayList<>();
-    ;
 }

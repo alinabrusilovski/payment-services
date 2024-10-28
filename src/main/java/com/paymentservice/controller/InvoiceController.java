@@ -3,11 +3,13 @@ package com.paymentservice.controller;
 import com.paymentservice.dto.InvoiceDto;
 import com.paymentservice.entity.InvoiceEntity;
 import com.paymentservice.service.IPaymentService;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,9 @@ public class InvoiceController {
 
     @PostMapping("/create")
     public ResponseEntity<InvoiceEntity> createInvoice(@RequestBody InvoiceDto invoiceDto) {
+        String relationId = UUID.randomUUID().toString();
+        MDC.put("relationId", relationId);
+
         logger.info("Received request to create an invoice: {}", invoiceDto);
 
         try {
@@ -32,11 +37,16 @@ public class InvoiceController {
         } catch (Exception e) {
             logger.error("Error occurred while creating invoice: {}", e.getMessage(), e);
             return ResponseEntity.status(500).build();
+        } finally {
+            MDC.clear();
         }
     }
 
     @GetMapping("/get/all")
     public ResponseEntity<List<InvoiceEntity>> getAllInvoices() {
+        String relationId = UUID.randomUUID().toString();
+        MDC.put("relationId", relationId);
+
         logger.info("Received request to get all invoices.");
 
         try {
@@ -53,6 +63,8 @@ public class InvoiceController {
         } catch (Exception e) {
             logger.error("Error occurred while retrieving invoices: {}", e.getMessage(), e);
             return ResponseEntity.status(500).build(); // Возвращаем HTTP 500 в случае ошибки
+        } finally {
+            MDC.clear();
         }
     }
 }

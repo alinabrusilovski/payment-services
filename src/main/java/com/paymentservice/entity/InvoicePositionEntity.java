@@ -29,7 +29,7 @@ public class InvoicePositionEntity {
 
     @ManyToOne
     @JoinColumn(name = "invoice_id", nullable = false)
-    @JsonIgnore // Это поле будет игнорироваться при сериализации
+    @JsonIgnore
     private InvoiceEntity invoice;
 
 }
