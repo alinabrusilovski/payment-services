@@ -20,7 +20,7 @@ public class InvoiceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "invoice_id")
+    @Column(name = "id")
     private Integer invoiceId;
 
     @Column(name = "system_id")

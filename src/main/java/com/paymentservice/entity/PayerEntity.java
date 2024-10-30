@@ -19,7 +19,7 @@ public class PayerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payer_id")
+    @Column(name = "id")
     private Integer payerId;
 
     @Column(name = "name", nullable = false)
