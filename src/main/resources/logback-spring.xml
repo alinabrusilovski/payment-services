@@ -2,7 +2,6 @@
     <!-- Определение переменных окружения с дефолтными значениями -->
     <property name="LOG_LEVEL" value="${LOG_LEVEL:-INFO}"/>
     <property name="APP_NAME" value="${APP_NAME:-payment-service}"/>
-    <property name="RELATION_ID" value="${RELATION_ID:-unknown}"/>
     <property name="CONTROLLER_LOG_LEVEL" value="${CONTROLLER_LOG_LEVEL:-INFO}"/>
     <property name="SERVICE_LOG_LEVEL" value="${SERVICE_LOG_LEVEL:-DEBUG}"/>
 
@@ -12,17 +11,17 @@
             <providers>
                 <timestamp/>
                 <pattern>
-                <pattern>
-                    {
-                    "level": "%level",
-                    "logger": "%logger",
-                    "thread": "%thread",
-                    "message": "%message",
-                    "relationId": "%X{relationId}",
-                    "appName": "${APP_NAME}",
-                    "exception": "%exception"
-                    }
-                </pattern>
+                    <pattern>
+                        {
+                        "level": "%level",
+                        "logger": "%logger",
+                        "thread": "%thread",
+                        "message": "%message",
+                        "relationId": "%X{relationId}",
+                        "appName": "${APP_NAME}",
+                        "exception": "%exception{full}"
+                        }
+                    </pattern>
                 </pattern>
             </providers>
         </encoder>
@@ -42,6 +41,9 @@
     <logger name="com.paymentservice.service" level="${SERVICE_LOG_LEVEL}">
         <appender-ref ref="console"/>
     </logger>
+
+    <!-- Уровень логирования для HikariPool -->
+    <logger name="com.zaxxer.hikari" level="INFO"/>
 
     <!-- Уровень логирования WARN для библиотек Spring и Hibernate -->
     <logger name="org.springframework" level="WARN"/>

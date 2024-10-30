@@ -12,8 +12,11 @@ import com.paymentservice.repository.PayerRepository;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +43,18 @@ public class PaymentService implements IPaymentService {
         logger.info("Starting invoice creation process for systemId: {}", invoiceDto.systemId());
 
         try {
+
+            if (invoiceDto.positions() == null || invoiceDto.positions().isEmpty()) {
+                logger.error("Invoice creation failed: no positions provided for systemId {}", invoiceDto.systemId());
+                throw new IllegalArgumentException("Invoice must have at least one position.");
+            }
+            for (InvoicePositionDto position : invoiceDto.positions()) {
+                if (position.amount().compareTo(BigDecimal.ZERO) <= 0) {
+                    logger.error("Invoice creation failed: position amount is not positive for systemId {}", invoiceDto.systemId());
+                    throw new IllegalArgumentException("All invoice positions must have a positive amount.");
+                }
+            }
+
             PayerEntity payer = createAndSavePayer(invoiceDto.payer(), relationId);
 
             InvoiceEntity invoiceEntity = createAndSaveInvoice(invoiceDto, payer, relationId);

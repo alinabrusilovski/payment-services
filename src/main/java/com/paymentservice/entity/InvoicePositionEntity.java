@@ -18,7 +18,7 @@ public class InvoicePositionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "invoice_position_id")
+    @Column(name = "id")
     private Integer invoicePositionId;
 
     @Column(name = "invoice_position_description")
