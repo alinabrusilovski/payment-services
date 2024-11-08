@@ -9,6 +9,9 @@ import com.paymentservice.entity.PayerEntity;
 import com.paymentservice.repository.InvoicePositionRepository;
 import com.paymentservice.repository.InvoiceRepository;
 import com.paymentservice.repository.PayerRepository;
+import com.paymentservice.validation.InvoiceDtoValidator;
+import com.paymentservice.validation.InvoicePositionDtoValidator;
+import com.paymentservice.validation.PayerDtoValidator;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,27 +36,28 @@ public class PaymentService implements IPaymentService {
     PayerRepository payerRepository;
     @Autowired
     InvoicePositionRepository invoicePositionRepository;
+    @Autowired
+    private InvoiceDtoValidator invoiceDtoValidator;
+    @Autowired
+    private PayerDtoValidator payerDtoValidator;
+    @Autowired
+    private InvoicePositionDtoValidator invoicePositionValidator;
+
 
     @Override
     @Transactional
     public InvoiceEntity createInvoice(InvoiceDto invoiceDto) {
+
+        invoiceDtoValidator.validate(invoiceDto);
+        payerDtoValidator.validate(invoiceDto.payer());
+        invoicePositionValidator.validatePositions(invoiceDto.positions()); // Валидируем позиции
+
         String relationId = UUID.randomUUID().toString();
         MDC.put("relationId", relationId);
 
         logger.info("Starting invoice creation process for systemId: {}", invoiceDto.systemId());
 
         try {
-
-            if (invoiceDto.positions() == null || invoiceDto.positions().isEmpty()) {
-                logger.error("Invoice creation failed: no positions provided for systemId {}", invoiceDto.systemId());
-                throw new IllegalArgumentException("Invoice must have at least one position.");
-            }
-            for (InvoicePositionDto position : invoiceDto.positions()) {
-                if (position.amount().compareTo(BigDecimal.ZERO) <= 0) {
-                    logger.error("Invoice creation failed: position amount is not positive for systemId {}", invoiceDto.systemId());
-                    throw new IllegalArgumentException("All invoice positions must have a positive amount.");
-                }
-            }
 
             PayerEntity payer = createAndSavePayer(invoiceDto.payer(), relationId);
 
@@ -108,11 +112,6 @@ public class PaymentService implements IPaymentService {
 
     private void processInvoicePositions(InvoiceEntity invoiceEntity, List<InvoicePositionDto> positionDtos, String relationId) {
         logger.info("Processing positions for invoice with relationId: {}", relationId);
-
-        if (positionDtos == null || positionDtos.isEmpty()) {
-            logger.warn("No invoice positions provided for invoice with systemId: {}", invoiceEntity.getSystemId());
-            return;
-        }
 
         logger.info("Processing {} invoice positions for invoice ID: {}", positionDtos.size(), invoiceEntity.getInvoiceId());
 

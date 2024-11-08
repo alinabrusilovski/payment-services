@@ -4,6 +4,11 @@ plugins {
     id 'java'
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 repositories {
     mavenCentral()
 }
@@ -28,8 +33,9 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql:42.6.0'
 
     // Lombok
-    compileOnly "org.projectlombok:lombok:$lombok_version"
+    implementation "org.projectlombok:lombok:$lombok_version"
     annotationProcessor "org.projectlombok:lombok:$lombok_version"
+    testAnnotationProcessor "org.projectlombok:lombok:$lombok_version"
 
     // Testing
     testImplementation "org.springframework.boot:spring-boot-starter-test:$spring_version"
