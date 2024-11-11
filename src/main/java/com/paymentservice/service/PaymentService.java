@@ -9,14 +9,11 @@ import com.paymentservice.entity.PayerEntity;
 import com.paymentservice.repository.InvoicePositionRepository;
 import com.paymentservice.repository.InvoiceRepository;
 import com.paymentservice.repository.PayerRepository;
-import com.paymentservice.validation.InvoiceDtoValidator;
-import com.paymentservice.validation.InvoicePositionDtoValidator;
-import com.paymentservice.validation.PayerDtoValidator;
+import com.paymentservice.validation.IValidator;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,19 +27,29 @@ public class PaymentService implements IPaymentService {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
 
-    @Autowired
-    InvoiceRepository invoiceRepository;
-    @Autowired
-    PayerRepository payerRepository;
-    @Autowired
-    InvoicePositionRepository invoicePositionRepository;
-    @Autowired
-    private InvoiceDtoValidator invoiceDtoValidator;
-    @Autowired
-    private PayerDtoValidator payerDtoValidator;
-    @Autowired
-    private InvoicePositionDtoValidator invoicePositionValidator;
+    private final InvoiceRepository invoiceRepository;
+    private final PayerRepository payerRepository;
+    private final InvoicePositionRepository invoicePositionRepository;
+    private final IValidator<InvoiceDto> invoiceDtoValidator;
+    private final IValidator<PayerDto> payerDtoValidator;
+    private final IValidator<List<InvoicePositionDto>> invoicePositionValidator;
 
+    @Autowired
+    public PaymentService(
+            InvoiceRepository invoiceRepository,
+            PayerRepository payerRepository,
+            InvoicePositionRepository invoicePositionRepository,
+            IValidator<InvoiceDto> invoiceDtoValidator,
+            IValidator<PayerDto> payerDtoValidator,
+            IValidator<List<InvoicePositionDto>> invoicePositionValidator
+    ) {
+        this.invoiceRepository = invoiceRepository;
+        this.payerRepository = payerRepository;
+        this.invoicePositionRepository = invoicePositionRepository;
+        this.invoiceDtoValidator = invoiceDtoValidator;
+        this.payerDtoValidator = payerDtoValidator;
+        this.invoicePositionValidator = invoicePositionValidator;
+    }
 
     @Override
     @Transactional
@@ -50,7 +57,7 @@ public class PaymentService implements IPaymentService {
 
         invoiceDtoValidator.validate(invoiceDto);
         payerDtoValidator.validate(invoiceDto.payer());
-        invoicePositionValidator.validatePositions(invoiceDto.positions()); // Валидируем позиции
+        invoicePositionValidator.validate(invoiceDto.positions());
 
         String relationId = UUID.randomUUID().toString();
         MDC.put("relationId", relationId);

@@ -5,28 +5,36 @@ import com.paymentservice.dto.InvoicePositionDto;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class InvoiceDtoValidator {
+public class InvoiceDtoValidator implements IValidator<InvoiceDto> {
 
-    public void validate(InvoiceDto invoiceDto) {
+    @Override
+    public ValidationResult validate(InvoiceDto invoiceDto) {
+        List<String> errors = new ArrayList<>();
+
         if (invoiceDto.invoiceDescription() == null || invoiceDto.invoiceDescription().isEmpty()) {
-            throw new IllegalArgumentException("Invoice must have a description.");
+            errors.add("Invoice must have a description.");
         }
 
         if (invoiceDto.positions() == null || invoiceDto.positions().isEmpty()) {
-            throw new IllegalArgumentException("Invoice must have at least one position.");
+            errors.add("Invoice must have at least one position.");
+        } else {
+            errors.addAll(validatePositions(invoiceDto.positions()));
         }
 
-        validatePositions(invoiceDto.positions());
+        return errors.isEmpty() ? ValidationResult.success() : ValidationResult.failure(errors);
     }
 
-    private void validatePositions(List<InvoicePositionDto> positions) {
+    private List<String> validatePositions(List<InvoicePositionDto> positions) {
+        List<String> errors = new ArrayList<>();
         for (InvoicePositionDto position : positions) {
             if (position.amount() == null || position.amount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new IllegalArgumentException("Position amount must be positive.");
+                errors.add("Position amount must be positive.");
             }
         }
+        return errors;
     }
 }
