@@ -60,6 +60,6 @@ class InvoiceDtoValidatorTest {
         ValidationResult result = validator.validate(invoiceDto);
 
         assertFalse(result.isValid());
-        assertEquals("Position amount must be positive.", result.getErrorMessage().get(0));
+        assertEquals("Position amount must be positive", result.getErrorMessage().get(0));
     }
 }

@@ -23,21 +23,21 @@ public class PayerDtoValidator implements IValidator<PayerDto> {
         List<String> errors = new ArrayList<>();
 
         if (payerDto.name() == null || payerDto.name().isEmpty()) {
-            errors.add("Payer must have a name.");
+            errors.add("Payer must have a name");
         }
 
         if (payerDto.phone() == null || payerDto.phone().isEmpty()) {
-            errors.add("Phone number must be provided.");
+            errors.add("Phone number must be provided");
         } else if (!isValidPhone(payerDto.phone())) {
-            errors.add("Phone number is invalid.");
+            errors.add("Phone number is invalid");
         }
 
         if (payerDto.email() != null && !isValidEmail(payerDto.email())) {
-            errors.add("Email is invalid.");
+            errors.add("Email is invalid");
         }
 
         if (payerDto.payerId() != null && payerRepository.findById(payerDto.payerId()).isEmpty()) {
-            errors.add("Payer does not exist in the database.");
+            errors.add("Payer does not exist in the database");
         }
 
         return errors.isEmpty() ? ValidationResult.success() : ValidationResult.failure(errors);

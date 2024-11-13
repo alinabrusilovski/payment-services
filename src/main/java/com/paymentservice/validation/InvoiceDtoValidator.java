@@ -16,11 +16,11 @@ public class InvoiceDtoValidator implements IValidator<InvoiceDto> {
         List<String> errors = new ArrayList<>();
 
         if (invoiceDto.invoiceDescription() == null || invoiceDto.invoiceDescription().isEmpty()) {
-            errors.add("Invoice must have a description.");
+            errors.add("Invoice must have a description");
         }
 
         if (invoiceDto.positions() == null || invoiceDto.positions().isEmpty()) {
-            errors.add("Invoice must have at least one position.");
+            errors.add("Invoice must have at least one position");
         } else {
             errors.addAll(validatePositions(invoiceDto.positions()));
         }
@@ -32,7 +32,7 @@ public class InvoiceDtoValidator implements IValidator<InvoiceDto> {
         List<String> errors = new ArrayList<>();
         for (InvoicePositionDto position : positions) {
             if (position.amount() == null || position.amount().compareTo(BigDecimal.ZERO) <= 0) {
-                errors.add("Position amount must be positive.");
+                errors.add("Position amount must be positive");
             }
         }
         return errors;

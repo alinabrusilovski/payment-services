@@ -15,11 +15,11 @@ public class InvoicePositionDtoValidator implements IValidator<List<InvoicePosit
         List<String> errors = new ArrayList<>();
 
         if (positions == null || positions.isEmpty()) {
-            errors.add("Invoice must have at least one position.");
+            errors.add("Invoice must have at least one position");
         } else {
             for (InvoicePositionDto position : positions) {
                 if (position.amount() == null || position.amount().compareTo(BigDecimal.ZERO) <= 0) {
-                    errors.add("Position amount must be positive.");
+                    errors.add("Position amount must be positive");
                 }
             }
         }
