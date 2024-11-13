@@ -13,9 +13,9 @@ import java.util.regex.Pattern;
 public class PayerDtoValidator implements IValidator<PayerDto> {
 
     @Autowired
-    private PayerRepository payerRepository;
+    public PayerRepository payerRepository;
 
-    private static final String PHONE_PATTERN = "^0[5-9]\\d{8}$";
+    private static final String PHONE_PATTERN = "^\\+972\\s[5-9]\\d{1}-\\d{7}$";
     private static final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.(gov|co|com|org|net|il)$";
 
     @Override

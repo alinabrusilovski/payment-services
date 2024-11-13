@@ -48,6 +48,23 @@ public class InvoicePositionDtoValidatorTest {
     }
 
     @Test
+    void testValidate_PositionsWithMultipleErrors() {
+        InvoicePositionDto positionWithNegativeAmount = mock(InvoicePositionDto.class);
+        when(positionWithNegativeAmount.amount()).thenReturn(new BigDecimal("-10"));
+
+        InvoicePositionDto positionWithNullAmount = mock(InvoicePositionDto.class);
+        when(positionWithNullAmount.amount()).thenReturn(null);
+
+        ValidationResult result = validator.validate(List.of(positionWithNegativeAmount, positionWithNullAmount));
+
+        assertFalse(result.isValid());
+        assertEquals(List.of(
+                "Position amount must be positive",
+                "Position amount must be positive"
+        ), result.getErrorMessage());
+    }
+
+    @Test
     void testValidate_PositionsNull() {
         ValidationResult result = validator.validate(null);
 

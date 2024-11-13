@@ -10,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class InvoiceDtoValidatorTest {
+public class InvoiceDtoValidatorTest {
 
     private final InvoiceDtoValidator validator = new InvoiceDtoValidator();
 
@@ -61,5 +61,24 @@ class InvoiceDtoValidatorTest {
 
         assertFalse(result.isValid());
         assertEquals("Position amount must be positive", result.getErrorMessage().get(0));
+    }
+
+    @Test
+    void testValidate_MultipleErrors() {
+        InvoiceDto invoiceDto = mock(InvoiceDto.class);
+
+        when(invoiceDto.invoiceDescription()).thenReturn(null);
+
+        InvoicePositionDto positionWithNegativeAmount = mock(InvoicePositionDto.class);
+        when(positionWithNegativeAmount.amount()).thenReturn(new BigDecimal("-10"));
+        when(invoiceDto.positions()).thenReturn(List.of(positionWithNegativeAmount));
+
+        ValidationResult result = validator.validate(invoiceDto);
+
+        assertFalse(result.isValid());
+        assertEquals(List.of(
+                "Invoice must have a description",
+                "Position amount must be positive"
+        ), result.getErrorMessage());
     }
 }

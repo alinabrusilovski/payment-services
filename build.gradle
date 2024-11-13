@@ -46,6 +46,10 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test:$spring_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$junit_version"
-    testImplementation "org.mockito:mockito-core:$mockito_version"
+    testImplementation "org.mockito:mockito-inline:$mockito_version"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
+}
+
+test {
+    useJUnitPlatform()
 }
