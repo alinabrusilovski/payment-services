@@ -15,6 +15,10 @@ public class InvoiceDtoValidator implements IValidator<InvoiceDto> {
     public ValidationResult validate(InvoiceDto invoiceDto) {
         List<String> errors = new ArrayList<>();
 
+        if (invoiceDto.payer() == null) {
+            errors.add("Invoice must have a payer");
+        }
+
         if (invoiceDto.invoiceDescription() == null || invoiceDto.invoiceDescription().isEmpty()) {
             errors.add("Invoice must have a description");
         }

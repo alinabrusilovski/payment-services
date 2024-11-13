@@ -12,6 +12,7 @@ import com.paymentservice.repository.PayerRepository;
 import com.paymentservice.validation.IValidator;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,8 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
-
-@Service
+@Component
 public class PaymentService implements IPaymentService {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
@@ -87,11 +87,11 @@ public class PaymentService implements IPaymentService {
         logger.info("Creating payer with relationId: {}", relationId);
 
         PayerEntity newPayer = new PayerEntity();
-        newPayer.setName(payerDto.name());
-        newPayer.setSecondName(payerDto.secondName());
-        newPayer.setBirthDate(payerDto.birthDate());
-        newPayer.setEmail(payerDto.email());
-        newPayer.setPhone(payerDto.phone());
+        newPayer.setName(payerDto.getName());
+        newPayer.setSecondName(payerDto.getSecondName());
+        newPayer.setBirthDate(payerDto.getBirthDate());
+        newPayer.setEmail(payerDto.getEmail());
+        newPayer.setPhone(payerDto.getPhone());
 
         logger.info("Payer data created: {} {}", newPayer.getName(), newPayer.getSecondName());
 

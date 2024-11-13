@@ -21,8 +21,8 @@ public class InvoicePositionDtoValidatorTest {
 
         ValidationResult result = validator.validate(List.of(position));
 
-        assertFalse(result.isValid());
-        assertEquals("Position amount must be positive", result.getErrorMessage().get(0));
+        assertFalse(result.valid());
+        assertEquals("Position amount must be positive", result.errorMessage().get(0));
     }
 
     @Test
@@ -32,8 +32,8 @@ public class InvoicePositionDtoValidatorTest {
 
         ValidationResult result = validator.validate(List.of(position));
 
-        assertFalse(result.isValid());
-        assertTrue(result.getErrorMessage().contains("Position amount must be positive"));
+        assertFalse(result.valid());
+        assertTrue(result.errorMessage().contains("Position amount must be positive"));
     }
 
     @Test
@@ -43,8 +43,8 @@ public class InvoicePositionDtoValidatorTest {
 
         ValidationResult result = validator.validate(List.of(position));
 
-        assertFalse(result.isValid());
-        assertEquals("Position amount must be positive", result.getErrorMessage().get(0));
+        assertFalse(result.valid());
+        assertEquals("Position amount must be positive", result.errorMessage().get(0));
     }
 
     @Test
@@ -57,27 +57,27 @@ public class InvoicePositionDtoValidatorTest {
 
         ValidationResult result = validator.validate(List.of(positionWithNegativeAmount, positionWithNullAmount));
 
-        assertFalse(result.isValid());
+        assertFalse(result.valid());
         assertEquals(List.of(
                 "Position amount must be positive",
                 "Position amount must be positive"
-        ), result.getErrorMessage());
+        ), result.errorMessage());
     }
 
     @Test
     void testValidate_PositionsNull() {
         ValidationResult result = validator.validate(null);
 
-        assertFalse(result.isValid());
-        assertTrue(result.getErrorMessage().contains("Invoice must have at least one position"));
+        assertFalse(result.valid());
+        assertTrue(result.errorMessage().contains("Invoice must have at least one position"));
     }
 
     @Test
     void testValidate_PositionsEmpty() {
         ValidationResult result = validator.validate(List.of());
 
-        assertFalse(result.isValid());
-        assertTrue(result.getErrorMessage().contains("Invoice must have at least one position"));
+        assertFalse(result.valid());
+        assertTrue(result.errorMessage().contains("Invoice must have at least one position"));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class InvoicePositionDtoValidatorTest {
 
         ValidationResult result = validator.validate(List.of(position));
 
-        assertTrue(result.isValid());
+        assertTrue(result.valid());
     }
 
 }
