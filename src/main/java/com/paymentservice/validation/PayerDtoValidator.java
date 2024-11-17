@@ -5,6 +5,7 @@ import com.paymentservice.repository.PayerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.regex.Pattern;
 
 @Component
@@ -19,37 +20,36 @@ public class PayerDtoValidator implements IValidator<PayerDto> {
     @Override
     public ValidationResult<PayerDto> validate(PayerDto payerDto) {
 
-        if (payerDto.getName() == null || payerDto.getName().isEmpty()) {
-            return ValidationResult.failure("Payer must have a name");
-        }
+        if (payerDto.getPayerId() != null && payerDto.getPayerId() <= 0)
+            return ValidationResult.failure("Payer id must be positive");
 
-        if (payerDto.getSecondName() == null || payerDto.getSecondName().isEmpty()) {
+        if (payerDto.getName() == null || payerDto.getName().isEmpty())
+            return ValidationResult.failure("Payer must have a name");
+
+        if (payerDto.getSecondName() == null || payerDto.getSecondName().isEmpty())
             return ValidationResult.failure("Payer must have a second name");
-        }
+
+        LocalDate minDate = LocalDate.of(1900, 1, 1);
+        LocalDate maxDate = LocalDate.now().plusDays(1);
+        if (payerDto.getBirthDate().isBefore(minDate) || payerDto.getBirthDate().isAfter(maxDate))
+            return ValidationResult.failure("Invalid birth date");
 
         if ((payerDto.getPhone() == null || payerDto.getPhone().isEmpty()) &&
-                (payerDto.getEmail() == null || payerDto.getEmail().isEmpty())) {
+                (payerDto.getEmail() == null || payerDto.getEmail().isEmpty()))
             return ValidationResult.failure("Either email or phone must be provided");
-        }
 
         if (payerDto.getPhone() != null && !payerDto.getPhone().isEmpty()) {
-            if (!isValidPhone(payerDto.getPhone())) {
+            if (!isValidPhone(payerDto.getPhone()))
                 return ValidationResult.failure("Phone number is invalid");
-            } else {
+            else
                 payerDto.setPhone(formatPhone(payerDto.getPhone()));
-            }
         }
 
         if (payerDto.getEmail() != null && !payerDto.getEmail().isEmpty()) {
-            if (!isValidEmail(payerDto.getEmail())) {
+            if (!isValidEmail(payerDto.getEmail()))
                 return ValidationResult.failure("Email is invalid");
-            } else {
+            else
                 payerDto.setEmail(formatEmail(payerDto.getEmail()));
-            }
-        }
-
-        if (payerDto.getPayerId() != null && payerRepository.findById(payerDto.getPayerId()).isEmpty()) {
-            return ValidationResult.failure("Payer does not exist in the database");
         }
 
         return ValidationResult.success(payerDto);

@@ -28,29 +28,30 @@ public class InvoiceDtoValidator implements IValidator<InvoiceDto> {
     public ValidationResult<InvoiceDto> validate(InvoiceDto invoiceDto) {
         List<String> errors = new ArrayList<>();
 
-        if (invoiceDto == null) {
+        if (invoiceDto == null)
             return ValidationResult.failure("Invoice cannot be null");
-        }
 
-        if (invoiceDto.payer() == null) {
+        if(invoiceDto.systemId() != null && invoiceDto.systemId() <= 0)
+            return ValidationResult.failure("Invoice id must be positive");
+
+        if (invoiceDto.payer() == null)
             return ValidationResult.failure("Invoice must have a payer");
-        }
+
         ValidationResult<PayerDto> payerValidation = payerDtoValidator.validate(invoiceDto.payer());
-        if (!payerValidation.isSuccess()) {
+
+        if (!payerValidation.isSuccess())
             return ValidationResult.failure(payerValidation.getError().orElse("Unknown error in payer validation"));
-        }
 
-        if (invoiceDto.positions() == null || invoiceDto.positions().isEmpty()) {
+        if (invoiceDto.positions() == null)
             return ValidationResult.failure("Invoice must have at least one position");
-        }
-        ValidationResult<List<InvoicePositionDto>> positionValidation = invoicePositionDtoValidator.validate(invoiceDto.positions());
-        if (!positionValidation.isSuccess()) {
-            return ValidationResult.failure(positionValidation.getError().orElse("Unknown error in position validation"));
-        }
 
-        if (invoiceDto.invoiceDescription() == null || invoiceDto.invoiceDescription().isEmpty()) {
+        if (invoiceDto.invoiceDescription() == null || invoiceDto.invoiceDescription().isEmpty())
             return ValidationResult.failure("Invoice must have a description");
-        }
+
+        ValidationResult<List<InvoicePositionDto>> positionValidation = invoicePositionDtoValidator.validate(invoiceDto.positions());
+
+        if (!positionValidation.isSuccess())
+            return ValidationResult.failure(positionValidation.getError().orElse("Unknown error in position validation"));
 
         return ValidationResult.success(invoiceDto);
     }

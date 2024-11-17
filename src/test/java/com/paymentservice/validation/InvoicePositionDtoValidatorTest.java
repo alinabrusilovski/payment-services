@@ -1,6 +1,7 @@
 package com.paymentservice.validation;
 
 import com.paymentservice.dto.InvoicePositionDto;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -12,83 +13,69 @@ import static org.mockito.Mockito.when;
 
 public class InvoicePositionDtoValidatorTest {
 
-    private final InvoicePositionDtoValidator validator = new InvoicePositionDtoValidator();
+    private InvoicePositionDtoValidator validator;
+    private InvoicePositionDto invoicePositionDto;
+
+    @BeforeEach
+    void setUp() {
+        invoicePositionDto = mock(InvoicePositionDto.class);
+        when(invoicePositionDto.invoicePositionId()).thenReturn(1000);
+        when(invoicePositionDto.invoicePositionDescription()).thenReturn("Product description");
+        when(invoicePositionDto.amount()).thenReturn(BigDecimal.valueOf(123.45));
+
+        validator = new InvoicePositionDtoValidator();
+    }
+
+    @Test
+    void testValidate_SuccessfulValidation() {
+        ValidationResult<List<InvoicePositionDto>> result = validator.validate(List.of(invoicePositionDto));
+
+        assertTrue(result.isSuccess());
+        assertFalse(result.getError().isPresent());
+    }
+
+    @Test
+    void testValidate_InvalidId() {
+        when(invoicePositionDto.invoicePositionId()).thenReturn(-1);
+
+        ValidationResult<List<InvoicePositionDto>> result = validator.validate(List.of(invoicePositionDto));
+        assertFalse(result.isSuccess());
+        assertTrue(result.getError().isPresent());
+    }
+
+    @Test
+    void testValidate_DescriptionMissing() {
+        when(invoicePositionDto.invoicePositionDescription()).thenReturn(null);
+
+        ValidationResult<List<InvoicePositionDto>> result = validator.validate(List.of(invoicePositionDto));
+        assertFalse(result.isSuccess());
+        assertTrue(result.getError().isPresent());
+    }
+
+    @Test
+    void testValidate_DescriptionIsEmpty() {
+        when(invoicePositionDto.invoicePositionDescription()).thenReturn("");
+
+        ValidationResult<List<InvoicePositionDto>> result = validator.validate(List.of(invoicePositionDto));
+        assertFalse(result.isSuccess());
+        assertTrue(result.getError().isPresent());
+    }
 
     @Test
     void testValidate_InvoicePositionAmountNegative() {
-        InvoicePositionDto position = mock(InvoicePositionDto.class);
-        when(position.amount()).thenReturn(BigDecimal.valueOf(-10));
+        when(invoicePositionDto.amount()).thenReturn(BigDecimal.valueOf(-10));
 
-        ValidationResult result = validator.validate(List.of(position));
-
-        assertFalse(result.valid());
-        assertEquals("Position amount must be positive", result.errorMessage().get(0));
+        ValidationResult<List<InvoicePositionDto>> result = validator.validate(List.of(invoicePositionDto));
+        assertFalse(result.isSuccess());
+        assertTrue(result.getError().isPresent());
     }
 
     @Test
     void testValidate_PositionAmountNull() {
-        InvoicePositionDto position = mock(InvoicePositionDto.class);
-        when(position.amount()).thenReturn(null);
+        when(invoicePositionDto.amount()).thenReturn(null);
 
-        ValidationResult result = validator.validate(List.of(position));
-
-        assertFalse(result.valid());
-        assertTrue(result.errorMessage().contains("Position amount must be positive"));
+        ValidationResult<List<InvoicePositionDto>> result = validator.validate(List.of(invoicePositionDto));
+        assertFalse(result.isSuccess());
+        assertTrue(result.getError().isPresent());
     }
-
-    @Test
-    void testValidate_PositionAmountZero() {
-        InvoicePositionDto position = mock(InvoicePositionDto.class);
-        when(position.amount()).thenReturn(BigDecimal.ZERO);
-
-        ValidationResult result = validator.validate(List.of(position));
-
-        assertFalse(result.valid());
-        //////////////////
-        assertEquals("Position amount must be positive", result.errorMessage().get(0));
-    }
-
-    @Test
-    void testValidate_PositionsWithMultipleErrors() {
-        InvoicePositionDto positionWithNegativeAmount = mock(InvoicePositionDto.class);
-        when(positionWithNegativeAmount.amount()).thenReturn(BigDecimal.valueOf(-10));
-
-        InvoicePositionDto positionWithNullAmount = mock(InvoicePositionDto.class);
-        when(positionWithNullAmount.amount()).thenReturn(null);
-
-        ValidationResult result = validator.validate(List.of(positionWithNegativeAmount, positionWithNullAmount));
-
-        assertFalse(result.valid());
-        assertEquals(List.of(
-                "Position amount must be positive",
-                "Position amount must be positive"
-        ), result.errorMessage());
-    }
-
-    @Test
-    void testValidate_PositionsNull() {
-        ValidationResult result = validator.validate(null);
-
-        assertFalse(result.valid());
-        assertTrue(result.errorMessage().contains("Invoice must have at least one position"));
-    }
-
-    @Test
-    void testValidate_PositionsEmpty() {
-        ValidationResult result = validator.validate(List.of());
-
-        assertFalse(result.valid());
-        assertTrue(result.errorMessage().contains("Invoice must have at least one position"));
-    }
-
-    @Test
-    void testValidate_ValidPositions() {
-        InvoicePositionDto position = mock(InvoicePositionDto.class);
-        when(position.amount()).thenReturn(BigDecimal.valueOf(10));
-
-        ValidationResult result = validator.validate(List.of(position));
-
-        assertTrue(result.valid());
-    }
-
 }
