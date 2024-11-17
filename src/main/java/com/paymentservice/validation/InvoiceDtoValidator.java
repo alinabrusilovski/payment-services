@@ -2,43 +2,57 @@ package com.paymentservice.validation;
 
 import com.paymentservice.dto.InvoiceDto;
 import com.paymentservice.dto.InvoicePositionDto;
+import com.paymentservice.dto.PayerDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class InvoiceDtoValidator implements IValidator<InvoiceDto> {
 
+    private final PayerDtoValidator payerDtoValidator;
+    private final InvoicePositionDtoValidator invoicePositionDtoValidator;
+
+    @Autowired
+    public InvoiceDtoValidator(
+            PayerDtoValidator payerDtoValidator,
+            InvoicePositionDtoValidator invoicePositionDtoValidator
+    ) {
+        this.payerDtoValidator = payerDtoValidator;
+        this.invoicePositionDtoValidator = invoicePositionDtoValidator;
+    }
+
     @Override
-    public ValidationResult validate(InvoiceDto invoiceDto) {
+    public ValidationResult<InvoiceDto> validate(InvoiceDto invoiceDto) {
         List<String> errors = new ArrayList<>();
 
-        if (invoiceDto.payer() == null) {
-            errors.add("Invoice must have a payer");
+        if (invoiceDto == null) {
+            return ValidationResult.failure("Invoice cannot be null");
         }
 
-        if (invoiceDto.invoiceDescription() == null || invoiceDto.invoiceDescription().isEmpty()) {
-            errors.add("Invoice must have a description");
+        if (invoiceDto.payer() == null) {
+            return ValidationResult.failure("Invoice must have a payer");
+        }
+        ValidationResult<PayerDto> payerValidation = payerDtoValidator.validate(invoiceDto.payer());
+        if (!payerValidation.isSuccess()) {
+            return ValidationResult.failure(payerValidation.getError().orElse("Unknown error in payer validation"));
         }
 
         if (invoiceDto.positions() == null || invoiceDto.positions().isEmpty()) {
-            errors.add("Invoice must have at least one position");
-        } else {
-            errors.addAll(validatePositions(invoiceDto.positions()));
+            return ValidationResult.failure("Invoice must have at least one position");
+        }
+        ValidationResult<List<InvoicePositionDto>> positionValidation = invoicePositionDtoValidator.validate(invoiceDto.positions());
+        if (!positionValidation.isSuccess()) {
+            return ValidationResult.failure(positionValidation.getError().orElse("Unknown error in position validation"));
         }
 
-        return errors.isEmpty() ? ValidationResult.success() : ValidationResult.failure(errors);
+        if (invoiceDto.invoiceDescription() == null || invoiceDto.invoiceDescription().isEmpty()) {
+            return ValidationResult.failure("Invoice must have a description");
+        }
+
+        return ValidationResult.success(invoiceDto);
     }
 
-    private List<String> validatePositions(List<InvoicePositionDto> positions) {
-        List<String> errors = new ArrayList<>();
-        for (InvoicePositionDto position : positions) {
-            if (position.amount() == null || position.amount().compareTo(BigDecimal.ZERO) <= 0) {
-                errors.add("Position amount must be positive");
-            }
-        }
-        return errors;
-    }
 }

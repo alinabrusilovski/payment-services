@@ -5,8 +5,6 @@ import com.paymentservice.repository.PayerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 @Component
@@ -19,46 +17,42 @@ public class PayerDtoValidator implements IValidator<PayerDto> {
     private static final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
     @Override
-    public ValidationResult validate(PayerDto payerDto) {
-        List<String> errors = new ArrayList<>();
+    public ValidationResult<PayerDto> validate(PayerDto payerDto) {
 
         if (payerDto.getName() == null || payerDto.getName().isEmpty()) {
-            errors.add("Payer must have a name");
+            return ValidationResult.failure("Payer must have a name");
         }
 
         if (payerDto.getSecondName() == null || payerDto.getSecondName().isEmpty()) {
-            errors.add("Payer must have a second name");
+            return ValidationResult.failure("Payer must have a second name");
         }
 
-        // Проверяем, чтобы хотя бы один из этих полей был заполнен
         if ((payerDto.getPhone() == null || payerDto.getPhone().isEmpty()) &&
                 (payerDto.getEmail() == null || payerDto.getEmail().isEmpty())) {
-            errors.add("Either email or phone must be provided");
+            return ValidationResult.failure("Either email or phone must be provided");
         }
 
-        // Валидируем phone
         if (payerDto.getPhone() != null && !payerDto.getPhone().isEmpty()) {
             if (!isValidPhone(payerDto.getPhone())) {
-                errors.add("Phone number is invalid");
+                return ValidationResult.failure("Phone number is invalid");
             } else {
                 payerDto.setPhone(formatPhone(payerDto.getPhone()));
             }
         }
 
-        // Валидируем email
         if (payerDto.getEmail() != null && !payerDto.getEmail().isEmpty()) {
             if (!isValidEmail(payerDto.getEmail())) {
-                errors.add("Email is invalid");
+                return ValidationResult.failure("Email is invalid");
             } else {
                 payerDto.setEmail(formatEmail(payerDto.getEmail()));
             }
         }
 
         if (payerDto.getPayerId() != null && payerRepository.findById(payerDto.getPayerId()).isEmpty()) {
-            errors.add("Payer does not exist in the database");
+            return ValidationResult.failure("Payer does not exist in the database");
         }
 
-        return errors.isEmpty() ? ValidationResult.success() : ValidationResult.failure(errors);
+        return ValidationResult.success(payerDto);
     }
 
     private boolean isValidPhone(String phone) {

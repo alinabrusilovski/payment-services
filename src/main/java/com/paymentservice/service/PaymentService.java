@@ -10,10 +10,10 @@ import com.paymentservice.repository.InvoicePositionRepository;
 import com.paymentservice.repository.InvoiceRepository;
 import com.paymentservice.repository.PayerRepository;
 import com.paymentservice.validation.IValidator;
+import com.paymentservice.validation.ValidationResult;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,33 +31,30 @@ public class PaymentService implements IPaymentService {
     private final PayerRepository payerRepository;
     private final InvoicePositionRepository invoicePositionRepository;
     private final IValidator<InvoiceDto> invoiceDtoValidator;
-    private final IValidator<PayerDto> payerDtoValidator;
-    private final IValidator<List<InvoicePositionDto>> invoicePositionValidator;
+
 
     @Autowired
     public PaymentService(
             InvoiceRepository invoiceRepository,
             PayerRepository payerRepository,
             InvoicePositionRepository invoicePositionRepository,
-            IValidator<InvoiceDto> invoiceDtoValidator,
-            IValidator<PayerDto> payerDtoValidator,
-            IValidator<List<InvoicePositionDto>> invoicePositionValidator
+            IValidator<InvoiceDto> invoiceDtoValidator
     ) {
         this.invoiceRepository = invoiceRepository;
         this.payerRepository = payerRepository;
         this.invoicePositionRepository = invoicePositionRepository;
         this.invoiceDtoValidator = invoiceDtoValidator;
-        this.payerDtoValidator = payerDtoValidator;
-        this.invoicePositionValidator = invoicePositionValidator;
     }
 
     @Override
     @Transactional
-    public InvoiceEntity createInvoice(InvoiceDto invoiceDto) {
+    public ValidationResult<InvoiceEntity> createInvoice(InvoiceDto invoiceDto) {
 
-        invoiceDtoValidator.validate(invoiceDto);
-        payerDtoValidator.validate(invoiceDto.payer());
-        invoicePositionValidator.validate(invoiceDto.positions());
+        ValidationResult<InvoiceDto> validationResult = invoiceDtoValidator.validate(invoiceDto);
+
+        if (!validationResult.isSuccess()) {
+            return ValidationResult.failure(validationResult.getError().toString());
+        }
 
         String relationId = UUID.randomUUID().toString();
         MDC.put("relationId", relationId);
@@ -67,17 +64,15 @@ public class PaymentService implements IPaymentService {
         try {
 
             PayerEntity payer = createAndSavePayer(invoiceDto.payer(), relationId);
-
             InvoiceEntity invoiceEntity = createAndSaveInvoice(invoiceDto, payer, relationId);
-
             processInvoicePositions(invoiceEntity, invoiceDto.positions(), relationId);
 
             logger.info("Invoice creation process completed successfully for systemId: {}", invoiceDto.systemId());
-            return invoiceEntity;
+            return ValidationResult.success(invoiceEntity);
 
         } catch (Exception e) {
             logger.error("Error occurred during invoice creation for systemId {}: {}", invoiceDto.systemId(), e.getMessage(), e);
-            throw new RuntimeException("Error occurred during invoice creation", e);
+            return ValidationResult.failure("Error occurred during invoice creation: " + e.getMessage());
         } finally {
             MDC.clear();
         }
@@ -137,23 +132,21 @@ public class PaymentService implements IPaymentService {
 
 
     @Override
-    public List<InvoiceEntity> getAllInvoices() {
+    public ValidationResult<List<InvoiceEntity>> getAllInvoices() {
         logger.info("Fetching all invoices from the database...");
 
         try {
             List<InvoiceEntity> invoices = invoiceRepository.findAll();
 
             if (invoices.isEmpty()) {
-                logger.info("No invoices found in the database.");
+                return ValidationResult.failure("No invoices found");
             } else {
-                logger.info("Successfully fetched {} invoices from the database.", invoices.size());
+                return ValidationResult.success(invoices);
             }
-
-            return invoices;
 
         } catch (Exception e) {
             logger.error("Error fetching invoices from the database: {}", e.getMessage(), e);
-            throw new RuntimeException("Error occurred while fetching invoices.", e);
+            return ValidationResult.failure("Error occurred while fetching invoices: " + e.getMessage());
         }
     }
 

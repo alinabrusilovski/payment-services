@@ -37,10 +37,17 @@ dependencies {
     // PostgreSQL Driver
     runtimeOnly 'org.postgresql:postgresql:42.6.0'
 
-    // Lombok (for reducing boilerplate code)
+    // Lombok
     implementation "org.projectlombok:lombok:$lombok_version"
     annotationProcessor "org.projectlombok:lombok:$lombok_version"
     testAnnotationProcessor "org.projectlombok:lombok:$lombok_version"
+
+    // Hibernate Validator
+    implementation 'org.hibernate.validator:hibernate-validator:7.0.3.Final'
+    // Bean Validation API
+    implementation 'javax.validation:javax.validation-api:2.0.1.Final'
+    // For integration with CDI or Spring
+    implementation 'org.glassfish:javax.el:3.0.0'
 
     // Testing Dependencies
     testImplementation "org.springframework.boot:spring-boot-starter-test:$spring_version"

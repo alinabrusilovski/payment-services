@@ -21,7 +21,7 @@ public class InvoiceDtoValidatorTest {
         InvoiceDto invoiceDto = mock(InvoiceDto.class);
         when(invoiceDto.payer()).thenReturn(null);
 
-        ValidationResult result = validator.validate(invoiceDto);
+        ValidationResult<List<String>> result = validator.validate(invoiceDto);
 
         assertFalse(result.valid());
         assertTrue(result.errorMessage().contains("Invoice must have a payer"));
@@ -86,7 +86,7 @@ public class InvoiceDtoValidatorTest {
         ValidationResult result = validator.validate(invoiceDto);
 
         assertFalse(result.valid());
-        assertEquals("Position amount must be positive", result.errorMessage().get(0));
+        assertEquals("Position amount must be positive", result.errorMessage().get(0)); //лучше использовать контейнс
     }
 
     @Test
