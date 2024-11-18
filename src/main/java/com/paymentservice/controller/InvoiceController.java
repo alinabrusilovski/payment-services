@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,29 +27,25 @@ public class InvoiceController {
 
     @PostMapping("/create")
     public ResponseEntity<Object> createInvoice(@RequestBody InvoiceDto invoiceDto) {
-        String relationId = UUID.randomUUID().toString();
-        MDC.put("relationId", relationId);
+        String relationId = MDC.get("relationId");
 
-        logger.info("Received request to create an invoice: {}", invoiceDto);
+        logger.info("Received request to create an invoice: {} with relationId: {}", invoiceDto, relationId);
 
         ValidationResult<InvoiceEntity> result = service.createInvoice(invoiceDto);
 
         if (result.isSuccess()) {
             return ResponseEntity.ok(result.getValue());
         } else {
-            logger.error("Error occurred while creating invoice: {}", result.getError());
-
+            logger.error("Error occurred while creating invoice with relationId {}: {}", relationId, result.getError());
             return ResponseEntity.status(400).body(Map.of("error", result.getError()));
         }
     }
 
-
     @GetMapping("/get/all")
     public ResponseEntity<List<InvoiceEntity>> getAllInvoices() {
-        String relationId = UUID.randomUUID().toString();
-        MDC.put("relationId", relationId);
+        String relationId = MDC.get("relationId");
 
-        logger.info("Received request to get all invoices.");
+        logger.info("Received request to get all invoices with relationId: {}", relationId);
 
         try {
             ValidationResult<List<InvoiceEntity>> result = service.getAllInvoices();
@@ -62,18 +57,15 @@ public class InvoiceController {
             List<InvoiceEntity> invoices = result.getValue().orElse(Collections.emptyList());
 
             if (invoices.isEmpty()) {
-                logger.info("No invoices found.");
+                logger.info("No invoices found with relationId: {}", relationId);
                 return ResponseEntity.noContent().build();
             } else {
-                logger.info("Returning {} invoices.", invoices.size());
+                logger.info("Returning {} invoices with relationId: {}", invoices.size(), relationId);
                 return ResponseEntity.ok(invoices);
             }
-
         } catch (Exception e) {
-            logger.error("Error occurred while retrieving invoices: {}", e.getMessage(), e);
+            logger.error("Error occurred while retrieving invoices with relationId {}: {}", relationId, e.getMessage(), e);
             return ResponseEntity.status(500).build();
-        } finally {
-            MDC.clear();
         }
     }
 }

@@ -17,7 +17,7 @@ public class InvoicePositionDtoValidator implements IValidator<List<InvoicePosit
                 return ValidationResult.failure("Position id must be positive");
             if (position.invoicePositionDescription() == null || position.invoicePositionDescription().isEmpty())
                 return ValidationResult.failure("Position must have a description");
-            if (position.amount() == null || position.amount().compareTo(BigDecimal.ZERO) <= 0)
+            if (position.amount() == null || position.amount().compareTo(BigDecimal.ZERO) < 0)
                 return ValidationResult.failure("Position amount must be positive");
         }
 
