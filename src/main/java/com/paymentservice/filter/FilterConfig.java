@@ -11,7 +11,9 @@ public class FilterConfig {
     public FilterRegistrationBean<RelationIdFilter> relationIdFilter() {
         FilterRegistrationBean<RelationIdFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new RelationIdFilter());
-        registrationBean.addUrlPatterns("/invoices/*"); // Указываем, на какие пути фильтр будет применяться
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setName("RelationIdFilter");
+        registrationBean.setOrder(1);
         return registrationBean;
     }
 }

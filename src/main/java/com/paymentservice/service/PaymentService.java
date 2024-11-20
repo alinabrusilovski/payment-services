@@ -11,13 +11,10 @@ import com.paymentservice.repository.InvoiceRepository;
 import com.paymentservice.repository.PayerRepository;
 import com.paymentservice.validation.IValidator;
 import com.paymentservice.validation.ValidationResult;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,16 +53,12 @@ public class PaymentService implements IPaymentService {
             return ValidationResult.failure(validationResult.getError().toString());
         }
 
-        String relationId = UUID.randomUUID().toString();
-        MDC.put("relationId", relationId);
-
         logger.info("Starting invoice creation process for systemId: {}", invoiceDto.systemId());
 
         try {
-
-            PayerEntity payer = createAndSavePayer(invoiceDto.payer(), relationId);
-            InvoiceEntity invoiceEntity = createAndSaveInvoice(invoiceDto, payer, relationId);
-            processInvoicePositions(invoiceEntity, invoiceDto.positions(), relationId);
+            PayerEntity payer = createAndSavePayer(invoiceDto.payer());
+            InvoiceEntity invoiceEntity = createAndSaveInvoice(invoiceDto, payer);
+            processInvoicePositions(invoiceEntity, invoiceDto.positions());
 
             logger.info("Invoice creation process completed successfully for systemId: {}", invoiceDto.systemId());
             return ValidationResult.success(invoiceEntity);
@@ -73,13 +66,11 @@ public class PaymentService implements IPaymentService {
         } catch (Exception e) {
             logger.error("Error occurred during invoice creation for systemId {}: {}", invoiceDto.systemId(), e.getMessage(), e);
             return ValidationResult.failure("Error occurred during invoice creation: " + e.getMessage());
-        } finally {
-            MDC.clear();
         }
     }
 
-    private PayerEntity createAndSavePayer(PayerDto payerDto, String relationId) {
-        logger.info("Creating payer with relationId: {}", relationId);
+    private PayerEntity createAndSavePayer(PayerDto payerDto) {
+        logger.info("Creating payer");
 
         PayerEntity newPayer = new PayerEntity();
         newPayer.setName(payerDto.getName());
@@ -96,8 +87,8 @@ public class PaymentService implements IPaymentService {
         return savedPayer;
     }
 
-    private InvoiceEntity createAndSaveInvoice(InvoiceDto invoiceDto, PayerEntity payer, String relationId) {
-        logger.info("Creating invoice with relationId: {}", relationId);
+    private InvoiceEntity createAndSaveInvoice(InvoiceDto invoiceDto, PayerEntity payer) {
+        logger.info("Creating invoice");
 
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setSystemId(invoiceDto.systemId());
@@ -112,8 +103,8 @@ public class PaymentService implements IPaymentService {
         return savedInvoice;
     }
 
-    private void processInvoicePositions(InvoiceEntity invoiceEntity, List<InvoicePositionDto> positionDtos, String relationId) {
-        logger.info("Processing positions for invoice with relationId: {}", relationId);
+    private void processInvoicePositions(InvoiceEntity invoiceEntity, List<InvoicePositionDto> positionDtos) {
+        logger.info("Processing positions");
 
         logger.info("Processing {} invoice positions for invoice ID: {}", positionDtos.size(), invoiceEntity.getInvoiceId());
 
@@ -133,7 +124,7 @@ public class PaymentService implements IPaymentService {
 
     @Override
     public ValidationResult<List<InvoiceEntity>> getAllInvoices() {
-        logger.info("Fetching all invoices from the database...");
+        logger.info("Fetching all invoices from the database");
 
         try {
             List<InvoiceEntity> invoices = invoiceRepository.findAll();
