@@ -31,3 +31,16 @@ amount DECIMAL(10, 2) NOT NULL
 
 ALTER TABLE public.invoice_position
     OWNER to payment_service;
+
+ALTER TABLE "payer"
+ALTER COLUMN birth_date SET NOT NULL;
+
+ALTER TABLE "invoice"
+ALTER COLUMN invoice_description TYPE VARCHAR(255),
+ALTER COLUMN invoice_description SET NOT NULL;
+
+ALTER TABLE invoice_position
+ALTER COLUMN invoice_position_description TYPE VARCHAR(255);
+
+ALTER TABLE invoice_position
+ALTER COLUMN invoice_position_description SET NOT NULL;
