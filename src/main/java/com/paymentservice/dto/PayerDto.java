@@ -1,18 +1,29 @@
 package com.paymentservice.dto;
 
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.lang.Nullable;
-
 import java.time.LocalDate;
-import java.util.List;
 
-public record PayerDto(@Nullable Integer payerId, String name, String secondName, LocalDate birthDate,
-                       @Nullable String email, @Nullable String phone) {
-
-    public PayerDto {
-        if (email == null && phone == null) {
-            throw new IllegalArgumentException("Either email or phone must be provided.");
-        }
-    }
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+public class PayerDto {
+    @Nullable
+    private Integer payerId;
+    private String name;
+    private String secondName;
+    private LocalDate birthDate;
+    @Nullable
+    private String email;
+    @Nullable
+    private String phone;
 }
+
 
