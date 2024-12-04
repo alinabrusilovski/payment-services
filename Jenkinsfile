@@ -10,7 +10,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    sh './run-tests.sh'
+                    sh './scripts/run-tests.sh'
                 }
             }
         }
