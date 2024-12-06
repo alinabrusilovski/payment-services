@@ -52,6 +52,10 @@ dependencies {
     //.env
     implementation 'io.github.cdimascio:dotenv-java:3.0.2'
 
+    // Authorization
+    implementation 'com.auth0:java-jwt:4.2.1'
+    implementation 'com.auth0:jwks-rsa:0.20.0'
+
     // Testing Dependencies
     testImplementation "org.springframework.boot:spring-boot-starter-test:$spring_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"

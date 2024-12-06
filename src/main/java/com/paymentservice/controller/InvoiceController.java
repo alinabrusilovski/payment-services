@@ -1,6 +1,7 @@
 package com.paymentservice.controller;
 
 import com.paymentservice.dto.InvoiceDto;
+import com.paymentservice.dto.JsonWrapper;
 import com.paymentservice.entity.InvoiceEntity;
 import com.paymentservice.service.IPaymentService;
 import com.paymentservice.validation.ValidationResult;
@@ -41,29 +42,36 @@ public class InvoiceController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<InvoiceEntity>> getAllInvoices() {
+    public ResponseEntity<JsonWrapper<List<InvoiceEntity>>> getAllInvoices(
+            @RequestParam(value = "offset", defaultValue = "0") int offset,
+            @RequestParam(value = "limit", defaultValue = "10") int limit,
+            @RequestParam(value = "sortBy", defaultValue = "invoiceId") String sortBy,
+            @RequestParam(value = "sortDirection", defaultValue = "asc") String sortDirection) {
 
-        logger.info("Received request to get all invoices");
+        logger.info("Received request to get invoices with offset={}, limit={}, sortBy={}, sortDirection={}",
+                offset, limit, sortBy, sortDirection);
 
         try {
-            ValidationResult<List<InvoiceEntity>> result = service.getAllInvoices();
+            ValidationResult<JsonWrapper<List<InvoiceEntity>>> result = service.getAllInvoices(offset, limit, sortBy, sortDirection);
 
             if (result.isFailure()) {
-                return ResponseEntity.status(500).body(Collections.emptyList());
+                logger.warn("Service returned failure: {}", result.getError());
+                return ResponseEntity.status(500).body(new JsonWrapper<>(Collections.emptyList()));
             }
 
-            List<InvoiceEntity> invoices = result.getValue().orElse(Collections.emptyList());
+            JsonWrapper<List<InvoiceEntity>> wrapper = result.getValue().orElse(new JsonWrapper<>(Collections.emptyList()));
 
-            if (invoices.isEmpty()) {
+            if (wrapper.getValue().isEmpty()) {
                 logger.info("No invoices found");
                 return ResponseEntity.noContent().build();
             } else {
-                logger.info("Returning {} invoices", invoices.size());
-                return ResponseEntity.ok(invoices);
+                logger.info("Returning {} invoices", wrapper.getValue().size());
+                return ResponseEntity.ok(wrapper);
             }
         } catch (Exception e) {
             logger.error("Error occurred while retrieving invoices: {}", e.getMessage(), e);
             return ResponseEntity.status(500).build();
         }
     }
+
 }
