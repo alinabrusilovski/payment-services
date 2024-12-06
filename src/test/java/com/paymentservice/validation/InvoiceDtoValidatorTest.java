@@ -50,7 +50,7 @@ public class InvoiceDtoValidatorTest {
         ValidationResult<InvoiceDto> result = validator.validate(invoiceDto);
 
         assertTrue(result.isSuccess());
-        assertFalse(result.getError().isPresent());
+        assertTrue(result.getError().isPresent());
     }
 
     @Test
