@@ -1,4 +1,4 @@
 #!/bin/bash
 
 echo "Running tests..."
-gradle build
+./gradlew build
