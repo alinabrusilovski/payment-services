@@ -1,5 +1,6 @@
-package com.paymentservice.filter;
+package com.paymentservice.config;
 
+import com.paymentservice.filter.RelationIdFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,4 +17,5 @@ public class FilterConfig {
         registrationBean.setOrder(1);
         return registrationBean;
     }
+
 }

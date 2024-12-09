@@ -2,6 +2,7 @@ package com.paymentservice.service;
 
 import com.paymentservice.dto.InvoiceDto;
 import com.paymentservice.dto.InvoicePositionDto;
+import com.paymentservice.dto.JsonWrapper;
 import com.paymentservice.dto.PayerDto;
 import com.paymentservice.entity.InvoiceEntity;
 import com.paymentservice.entity.InvoicePositionEntity;
@@ -12,6 +13,10 @@ import com.paymentservice.repository.PayerRepository;
 import com.paymentservice.validation.IValidator;
 import com.paymentservice.validation.ValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -123,16 +128,26 @@ public class PaymentService implements IPaymentService {
 
 
     @Override
-    public ValidationResult<List<InvoiceEntity>> getAllInvoices() {
-        logger.info("Fetching all invoices from the database");
+    public ValidationResult<JsonWrapper<List<InvoiceEntity>>> getAllInvoices(int offset, int limit, String sortBy, String sortDirection) {
+        logger.info("Fetching invoices with offset={}, limit={}, sortBy={}, sortDirection={}", offset, limit, sortBy, sortDirection);
 
         try {
-            List<InvoiceEntity> invoices = invoiceRepository.findAll();
+            if (sortBy == null || sortBy.isEmpty()) {
+                sortBy = "invoiceId";
+            }
+            if (sortDirection == null || !(sortDirection.equalsIgnoreCase("asc") || sortDirection.equalsIgnoreCase("desc"))) {
+                sortDirection = "asc";
+            }
+            Sort sort = Sort.by(sortDirection.equalsIgnoreCase("asc") ? Sort.Order.asc(sortBy) : Sort.Order.desc(sortBy));
 
-            if (invoices.isEmpty()) {
+            Pageable pageable = PageRequest.of(offset, limit, sort);
+            Page<InvoiceEntity> page = invoiceRepository.findAll(pageable);
+
+            if (page.isEmpty()) {
                 return ValidationResult.failure("No invoices found");
             } else {
-                return ValidationResult.success(invoices);
+                JsonWrapper<List<InvoiceEntity>> wrapper = new JsonWrapper<>(page.getContent());
+                return ValidationResult.success(wrapper);
             }
 
         } catch (Exception e) {
