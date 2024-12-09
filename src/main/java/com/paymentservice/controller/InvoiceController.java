@@ -5,7 +5,6 @@ import com.paymentservice.dto.JsonWrapper;
 import com.paymentservice.entity.InvoiceEntity;
 import com.paymentservice.service.IPaymentService;
 import com.paymentservice.validation.ValidationResult;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
