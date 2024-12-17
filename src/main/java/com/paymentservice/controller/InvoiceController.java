@@ -63,7 +63,7 @@ public class InvoiceController {
 
         if (wrapper.getValue().isEmpty()) {
             log.info("No invoices found");
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.status(500).body(new JsonWrapper<>(Collections.emptyList()));
         } else {
             log.info("Returning {} invoices", wrapper.getValue().size());
             return ResponseEntity.ok(wrapper);

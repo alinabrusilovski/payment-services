@@ -44,8 +44,3 @@ ALTER COLUMN invoice_position_description TYPE VARCHAR(255);
 
 ALTER TABLE invoice_position
 ALTER COLUMN invoice_position_description SET NOT NULL;
-
-ALTER TABLE users
-ADD COLUMN refresh_token VARCHAR(1000) UNIQUE,
-ADD COLUMN refresh_token_expired TIMESTAMP;
-CREATE INDEX idx_refresh_token ON users(refresh_token);

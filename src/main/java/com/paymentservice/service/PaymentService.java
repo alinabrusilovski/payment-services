@@ -5,7 +5,6 @@ import com.paymentservice.dto.InvoicePositionDto;
 import com.paymentservice.dto.JsonWrapper;
 import com.paymentservice.dto.OperationResult;
 import com.paymentservice.dto.PayerDto;
-import com.paymentservice.dto.SortDirection;
 import com.paymentservice.entity.InvoiceEntity;
 import com.paymentservice.entity.InvoicePositionEntity;
 import com.paymentservice.entity.PayerEntity;
@@ -140,26 +139,21 @@ public class PaymentService implements IPaymentService {
         if (sortBy == null || sortBy.isEmpty()) {
             sortBy = "invoiceId";
         }
-        SortDirection direction = SortDirection.ASC;
-
-        if (sortDirection != null && !sortDirection.isEmpty()) {
-            try {
-                direction = SortDirection.fromString(sortDirection);
-            } catch (IllegalArgumentException e) {
-                direction = SortDirection.ASC;
-            }
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            log.warn("Invalid or missing sortDirection '{}', defaulting to ASC", sortDirection);
+            direction = Sort.Direction.ASC;
         }
 
-        Sort sort = Sort.by(direction == SortDirection.ASC ? Sort.Order.asc(sortBy) : Sort.Order.desc(sortBy));
+        Sort sort = Sort.by(direction, sortBy);
 
         Pageable pageable = PageRequest.of(offset, limit, sort);
         Page<InvoiceEntity> page = invoiceRepository.findAll(pageable);
 
-        if (page.isEmpty()) {
-            return OperationResult.failure("No invoices found");
-        } else {
-            JsonWrapper<List<InvoiceEntity>> wrapper = new JsonWrapper<>(page.getContent());
-            return OperationResult.success(wrapper);
-        }
+        JsonWrapper<List<InvoiceEntity>> wrapper = new JsonWrapper<>(page.getContent());
+        log.info("Successfully fetched {} invoices.", wrapper.getValue().size());
+        return OperationResult.success(wrapper);
     }
 }
