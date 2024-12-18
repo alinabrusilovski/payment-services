@@ -2,6 +2,8 @@ package com.paymentservice.service;
 
 import com.paymentservice.dto.InvoiceDto;
 import com.paymentservice.dto.InvoicePositionDto;
+import com.paymentservice.dto.JsonWrapper;
+import com.paymentservice.dto.OperationResult;
 import com.paymentservice.dto.PayerDto;
 import com.paymentservice.entity.InvoiceEntity;
 import com.paymentservice.entity.InvoicePositionEntity;
@@ -11,18 +13,21 @@ import com.paymentservice.repository.InvoiceRepository;
 import com.paymentservice.repository.PayerRepository;
 import com.paymentservice.validation.IValidator;
 import com.paymentservice.validation.ValidationResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Slf4j
 public class PaymentService implements IPaymentService {
-
-    private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
 
     private final InvoiceRepository invoiceRepository;
     private final PayerRepository payerRepository;
@@ -45,32 +50,32 @@ public class PaymentService implements IPaymentService {
 
     @Override
     @Transactional
-    public ValidationResult<InvoiceEntity> createInvoice(InvoiceDto invoiceDto) {
+    public OperationResult<InvoiceEntity> createInvoice(InvoiceDto invoiceDto) {
 
         ValidationResult<InvoiceDto> validationResult = invoiceDtoValidator.validate(invoiceDto);
 
         if (!validationResult.isSuccess()) {
-            return ValidationResult.failure(validationResult.getError().toString());
+            return OperationResult.failure(validationResult.getError().toString());
         }
 
-        logger.info("Starting invoice creation process for systemId: {}", invoiceDto.systemId());
+        log.info("Starting invoice creation process for systemId: {}", invoiceDto.systemId());
 
         try {
             PayerEntity payer = createAndSavePayer(invoiceDto.payer());
             InvoiceEntity invoiceEntity = createAndSaveInvoice(invoiceDto, payer);
             processInvoicePositions(invoiceEntity, invoiceDto.positions());
 
-            logger.info("Invoice creation process completed successfully for systemId: {}", invoiceDto.systemId());
-            return ValidationResult.success(invoiceEntity);
+            log.info("Invoice creation process completed successfully for systemId: {}", invoiceDto.systemId());
+            return OperationResult.success(invoiceEntity);
 
         } catch (Exception e) {
-            logger.error("Error occurred during invoice creation for systemId {}: {}", invoiceDto.systemId(), e.getMessage(), e);
-            return ValidationResult.failure("Error occurred during invoice creation: " + e.getMessage());
+            log.error("Error occurred during invoice creation for systemId {}: {}", invoiceDto.systemId(), e.getMessage(), e);
+            return OperationResult.failure("Error occurred during invoice creation: " + e.getMessage());
         }
     }
 
     private PayerEntity createAndSavePayer(PayerDto payerDto) {
-        logger.info("Creating payer");
+        log.info("Creating payer");
 
         PayerEntity newPayer = new PayerEntity();
         newPayer.setName(payerDto.getName());
@@ -79,34 +84,34 @@ public class PaymentService implements IPaymentService {
         newPayer.setEmail(payerDto.getEmail());
         newPayer.setPhone(payerDto.getPhone());
 
-        logger.info("Payer data created: {} {}", newPayer.getName(), newPayer.getSecondName());
+        log.info("Payer data created: {} {}", newPayer.getName(), newPayer.getSecondName());
 
         PayerEntity savedPayer = payerRepository.save(newPayer);
-        logger.info("Payer saved with ID: {}", savedPayer.getPayerId());
+        log.info("Payer saved with ID: {}", savedPayer.getPayerId());
 
         return savedPayer;
     }
 
     private InvoiceEntity createAndSaveInvoice(InvoiceDto invoiceDto, PayerEntity payer) {
-        logger.info("Creating invoice");
+        log.info("Creating invoice");
 
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setSystemId(invoiceDto.systemId());
         invoiceEntity.setInvoiceDescription(invoiceDto.invoiceDescription());
         invoiceEntity.setPayer(payer);
 
-        logger.info("Invoice object created for systemId: {}", invoiceDto.systemId());
+        log.info("Invoice object created for systemId: {}", invoiceDto.systemId());
 
         InvoiceEntity savedInvoice = invoiceRepository.save(invoiceEntity);
-        logger.info("Invoice saved with ID: {}", savedInvoice.getInvoiceId());
+        log.info("Invoice saved with ID: {}", savedInvoice.getInvoiceId());
 
         return savedInvoice;
     }
 
     private void processInvoicePositions(InvoiceEntity invoiceEntity, List<InvoicePositionDto> positionDtos) {
-        logger.info("Processing positions");
+        log.info("Processing positions");
 
-        logger.info("Processing {} invoice positions for invoice ID: {}", positionDtos.size(), invoiceEntity.getInvoiceId());
+        log.info("Processing {} invoice positions for invoice ID: {}", positionDtos.size(), invoiceEntity.getInvoiceId());
 
         for (var positionDto : positionDtos) {
             InvoicePositionEntity position = new InvoicePositionEntity();
@@ -117,28 +122,38 @@ public class PaymentService implements IPaymentService {
             invoiceEntity.getPositions().add(position);
 
             invoicePositionRepository.save(position);
-            logger.info("Invoice position saved for invoice ID: {}", invoiceEntity.getInvoiceId());
+            log.info("Invoice position saved for invoice ID: {}", invoiceEntity.getInvoiceId());
         }
     }
 
 
     @Override
-    public ValidationResult<List<InvoiceEntity>> getAllInvoices() {
-        logger.info("Fetching all invoices from the database");
+    public OperationResult<JsonWrapper<List<InvoiceEntity>>> getAllInvoices(int offset, int limit, String sortBy, String sortDirection) {
+        log.info("Fetching invoices with offset={}, limit={}, sortBy={}, sortDirection={}", offset, limit, sortBy, sortDirection);
 
-        try {
-            List<InvoiceEntity> invoices = invoiceRepository.findAll();
-
-            if (invoices.isEmpty()) {
-                return ValidationResult.failure("No invoices found");
-            } else {
-                return ValidationResult.success(invoices);
-            }
-
-        } catch (Exception e) {
-            logger.error("Error fetching invoices from the database: {}", e.getMessage(), e);
-            return ValidationResult.failure("Error occurred while fetching invoices: " + e.getMessage());
+        if (limit > 1000) {
+            log.warn("Limit exceeded. Limiting to 1000");
+            limit = 1000;
         }
-    }
 
+        if (sortBy == null || sortBy.isEmpty()) {
+            sortBy = "invoiceId";
+        }
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            log.warn("Invalid or missing sortDirection '{}', defaulting to ASC", sortDirection);
+            direction = Sort.Direction.ASC;
+        }
+
+        Sort sort = Sort.by(direction, sortBy);
+
+        Pageable pageable = PageRequest.of(offset, limit, sort);
+        Page<InvoiceEntity> page = invoiceRepository.findAll(pageable);
+
+        JsonWrapper<List<InvoiceEntity>> wrapper = new JsonWrapper<>(page.getContent());
+        log.info("Successfully fetched {} invoices.", wrapper.getValue().size());
+        return OperationResult.success(wrapper);
+    }
 }
