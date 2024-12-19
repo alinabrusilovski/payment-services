@@ -1,6 +1,5 @@
 package com.paymentservice.validation;
 
-import com.paymentservice.dto.InvoiceDto;
 import org.springframework.stereotype.Component;
 
 

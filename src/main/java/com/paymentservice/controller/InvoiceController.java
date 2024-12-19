@@ -1,10 +1,11 @@
 package com.paymentservice.controller;
 
+import com.paymentservice.dto.ErrorResponseDto;
 import com.paymentservice.dto.InvoiceDto;
 import com.paymentservice.dto.JsonWrapper;
 import com.paymentservice.dto.OperationResult;
 import com.paymentservice.entity.InvoiceEntity;
-import com.paymentservice.service.IPaymentService;
+import com.paymentservice.service.IInvoiceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 
 @RestController
@@ -21,7 +21,7 @@ import java.util.Map;
 public class InvoiceController {
 
     @Autowired
-    private IPaymentService service;
+    private IInvoiceService service;
 
     @PostMapping()
     public ResponseEntity<Object> createInvoice(@RequestBody InvoiceDto invoiceDto) {
@@ -31,10 +31,11 @@ public class InvoiceController {
         OperationResult<InvoiceEntity> result = service.createInvoice(invoiceDto);
 
         if (result.isSuccess()) {
-            return ResponseEntity.ok(result.getValue());
+            return ResponseEntity.ok(new JsonWrapper<>(result.getValue().orElse(null)));
         } else {
             log.error("Error occurred while creating invoice: {}", result.getError());
-            return ResponseEntity.status(400).body(Map.of("error", result.getError()));
+            ErrorResponseDto errorResponse = new ErrorResponseDto("Failure", result.getError().orElse("Unknown error"));
+            return ResponseEntity.status(500).body(new JsonWrapper<>(Collections.emptyList(), errorResponse));
         }
     }
 
@@ -56,14 +57,16 @@ public class InvoiceController {
 
         if (result.isFailure()) {
             log.warn("Service returned failure: {}", result.getError());
-            return ResponseEntity.status(500).body(new JsonWrapper<>(Collections.emptyList()));
+            ErrorResponseDto errorResponse = new ErrorResponseDto("Failure", result.getError().orElse("Unknown error"));
+            return ResponseEntity.status(500).body(new JsonWrapper<>(Collections.emptyList(), errorResponse));
         }
 
         JsonWrapper<List<InvoiceEntity>> wrapper = result.getValue().orElse(new JsonWrapper<>(Collections.emptyList()));
 
         if (wrapper.getValue().isEmpty()) {
             log.info("No invoices found");
-            return ResponseEntity.status(500).body(new JsonWrapper<>(Collections.emptyList()));
+            ErrorResponseDto errorResponse = new ErrorResponseDto("No Data", "No invoices found");
+            return ResponseEntity.status(500).body(new JsonWrapper<>(Collections.emptyList(), errorResponse));
         } else {
             log.info("Returning {} invoices", wrapper.getValue().size());
             return ResponseEntity.ok(wrapper);

@@ -1,7 +1,6 @@
 package com.paymentservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.math.BigDecimal;
 
@@ -44,4 +43,7 @@ public class InvoicePositionEntity {
     @JsonBackReference
     private InvoiceEntity invoice;
 
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private PaymentEntity payment;
 }

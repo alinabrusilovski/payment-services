@@ -61,7 +61,6 @@ dependencies {
     implementation 'org.springframework.security:spring-security-config:6.1.0'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.0.1'
 
-
     // Testing Dependencies
     testImplementation "org.springframework.boot:spring-boot-starter-test:$spring_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"

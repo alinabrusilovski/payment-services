@@ -44,3 +44,19 @@ ALTER COLUMN invoice_position_description TYPE VARCHAR(255);
 
 ALTER TABLE invoice_position
 ALTER COLUMN invoice_position_description SET NOT NULL;
+
+CREATE TABLE payment (
+    id SERIAL PRIMARY KEY,
+    amount DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    created TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE payment_status (
+    id SERIAL PRIMARY KEY,
+    payment_id INT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    status_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_payment FOREIGN KEY (payment_id) REFERENCES payment(id) ON DELETE CASCADE
+);
+

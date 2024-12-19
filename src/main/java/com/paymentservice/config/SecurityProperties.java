@@ -1,19 +1,16 @@
 package com.paymentservice.config;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "security")
+@Getter
+@Setter
 public class SecurityProperties {
 
     private String jwksUri;
 
-    public String getJwksUri() {
-        return jwksUri;
-    }
-
-    public void setJwksUri(String jwksUri) {
-        this.jwksUri = jwksUri;
-    }
 }
